@@ -1,0 +1,37 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Challenger API Node Documentation",
+    "description": "This is a challenger",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/boleto/{barcode}": {
+      "get": {
+        "tags": ["Boleto"],
+        "summary": "Check barcode of bank slip.",
+        "description": "Check barcode of bank slip  is valid.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "barCode": { "type": "string" },
+                      "amount": { "type": "string" },
+                      "expirationDate": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
