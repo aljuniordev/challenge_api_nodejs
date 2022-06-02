@@ -1,14 +1,14 @@
-# Desafio API Nodejs
+# Challenge API Nodejs
 
-> Desafio criado para desenvolver uma API em node, visando em arquitetura limpa.
+> Challenge created to develop an API in node, focusing at clean architecture.
 
-## 💻 Pré-requisitos
+## 💻 Prerequisites
 
 - Node v16+
 
-## ☕ Usando Desafio API Nodejs
+## ☕ Using Nodejs API Challenge
 
-Para usar Desafio API Nodejs, siga estas etapas:
+To use Nodejs API Challenge, follow these steps:
 
 ```
 npm run start:dev
@@ -17,9 +17,9 @@ npm run start:dev
 #### Endpoints
 
 - http://localhost:8080/api-docs
-  > Demonstra a documentação da aplicação.
+  > Demonstrates application documentation.
 - http://localhost:8080/boleto/{barcode}
-  > Valida se barcode é válido.
+  > Validates if barcode is valid.
 
 ## Technologies
 
@@ -39,7 +39,7 @@ In this project I am using:
   > To facilitate api security configuration
 
 
-## 🤝 Colaboradores
+## 🤝 Collaborator
 
 <table>
   <tr>
