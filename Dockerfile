@@ -8,6 +8,6 @@ RUN yarn
 
 COPY . .
 
-EXPOSE 3333
+EXPOSE 8080
 
-CMD [ "yarn", "dev:server" ]
+CMD [ "yarn", "start:dev" ]

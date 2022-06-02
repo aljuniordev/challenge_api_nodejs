@@ -1,16 +1,20 @@
-import { StatusCodes } from 'http-status-codes';
+import { StatusCodes } from "http-status-codes";
 
-import { errorsMessages } from './messages';
+import { errorsMessages } from "./messages";
 
 class AppError {
   public readonly message: string;
   public readonly statusCode: number;
 
   constructor(
-    message: keyof typeof errorsMessages,
-    statusCode: keyof typeof StatusCodes = 'BAD_REQUEST',
+    error: keyof typeof errorsMessages | Error,
+    statusCode: keyof typeof StatusCodes = "BAD_REQUEST",
   ) {
-    this.message = errorsMessages[message];
+    if (error instanceof Error) {
+      this.message = errorsMessages["error_exception"] + error?.message;
+    } else {
+      this.message = errorsMessages[error];
+    }
     this.statusCode = StatusCodes[statusCode];
   }
 }

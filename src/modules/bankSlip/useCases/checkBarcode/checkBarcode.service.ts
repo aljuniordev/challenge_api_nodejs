@@ -1,32 +1,70 @@
-import { inject, injectable } from 'tsyringe';
-import { AppError } from '@shared/errors';
-import { IDateProvider } from '@shared/containers/providers';
+import { inject, injectable } from "tsyringe";
+import { AppError } from "@shared/errors";
+import { IDateProvider } from "@shared/containers/providers";
 
-import { ICheckBarcodeDTORet } from '@modules/bankSlip/dtos';
-import { regexFindDotOnText, regexOnlyNumbersAndSize47 } from '@utils/regexSamples';
+import { ICheckBarcodeDTORet } from "@modules/bankSlip/dtos";
+import {
+  regexFindDotOnText,
+  regexOnlyNumbersAndSize47,
+  regexLeadingZeros,
+} from "@utils/regexSamples";
 
 interface IRequest {
   barcode: string;
 }
 
+interface IFieldsOfBarcode {
+  num: string;
+  dv: string;
+}
+
 @injectable()
 class CheckBarcodeUseCase {
   constructor(
-    @inject('DateProvider')
+    @inject("DateProvider")
     private dateProvider: IDateProvider,
   ) {}
 
   async execute({ barcode: barcodeRaw }: IRequest): Promise<ICheckBarcodeDTORet> {
-    if (!barcodeRaw) {
-      throw new AppError('missing_parameters', 'BAD_REQUEST');
+    try {
+      if (!barcodeRaw) {
+        throw new AppError("missing_parameters", "BAD_REQUEST");
+      }
+
+      const barcode = barcodeRaw.replace(regexFindDotOnText, "");
+
+      if (!regexOnlyNumbersAndSize47.test(barcode)) {
+        throw new AppError("incorrect_parameters", "BAD_REQUEST");
+      }
+
+      const value = this.getValueOfBarcode(barcode);
+
+      const expirationDate = this.getDateOfBarcode(barcode);
+
+      const fieldsOfBarcode = this.getFieldsOfBarcode(barcode);
+      const fieldsAreTrue = fieldsOfBarcode.every(
+        field => this.verifyingDigitModule10(field.num) === Number(field.dv),
+      );
+
+      if (!fieldsAreTrue) {
+        throw new AppError("barcode_dont_valid", "BAD_REQUEST");
+      }
+
+      return {
+        amount: value,
+        expirationDate: this.dateProvider.dateToString(expirationDate, "DD/MM/YYYY"),
+        barCode: barcode,
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new AppError(error, "BAD_REQUEST");
+      } else {
+        throw error;
+      }
     }
+  }
 
-    const barcode = barcodeRaw.replace(regexFindDotOnText, '');
-
-    if (!regexOnlyNumbersAndSize47.test(barcode)) {
-      throw new AppError('incorrect_parameters', 'BAD_REQUEST');
-    }
-
+  getFieldsOfBarcode(barcode: string): IFieldsOfBarcode[] {
     const fields = [
       {
         num: barcode.substring(0, 9),
@@ -42,21 +80,8 @@ class CheckBarcodeUseCase {
       },
     ];
 
-    const fieldsAreTrue = fields.every(
-      field => this.verifyingDigitModule10(field.num) === Number(field.dv),
-    );
-
-    if (!fieldsAreTrue) {
-      throw new AppError('barcode_dont_valid', 'BAD_REQUEST');
-    }
-
-    return {
-      amount: '1',
-      expirationDate: this.dateProvider.dateNow().toISOString(),
-      barCode: barcode,
-    };
+    return fields;
   }
-
   /*
     ANEXO IV – CÁLCULO DO DÍGITO VERIFICADOR (DV) DA LINHA DIGITÁVEL (MÓDULO 10)
     A representação numérica do código de barras é composta, por cinco campos, sendo os
@@ -79,7 +104,7 @@ class CheckBarcodeUseCase {
     (zero).
   */
   verifyingDigitModule10(digitableLine: string) {
-    const digitableLineOnArray = digitableLine.split('').reverse();
+    const digitableLineOnArray = digitableLine.split("").reverse();
     const totalCalculated = digitableLineOnArray.reduce((acc, current, index) => {
       //prevent zero index
       const preventZeroIndex = index + 1;
@@ -119,6 +144,28 @@ class CheckBarcodeUseCase {
     }
 
     return verifyingDigit;
+  }
+
+  getValueOfBarcode(barcode: string): string {
+    const valueRaw = barcode.substring(37, 47).replace(regexLeadingZeros, "");
+
+    const value =
+      valueRaw.substring(0, valueRaw.length - 2) +
+      "," +
+      valueRaw.substring(valueRaw.length - 2, valueRaw.length);
+
+    return value;
+  }
+
+  getDateOfBarcode(barcode: string): Date {
+    const expirationDateOfBarcode = +barcode.slice(33, 37);
+
+    const milis = expirationDateOfBarcode * 24 * 60 * 60 * 1000;
+
+    const parameterDate = new Date("10/07/1997");
+    const expirationDate = this.dateProvider.addMilliseconds(parameterDate, milis);
+
+    return expirationDate;
   }
 }
 
