@@ -1,13 +1,13 @@
 import { inject, injectable } from "tsyringe";
-import { AppError } from "@shared/errors";
-import { IDateProvider } from "@shared/containers/providers";
+import { AppError } from "../../../../shared/errors";
+import { IDateProvider } from "../../../../shared/containers/providers";
 
 import { ICheckBarcodeDTORet } from "@modules/bankSlip/dtos";
 import {
   regexFindDotOnText,
   regexOnlyNumbersAndSize47,
   regexLeadingZeros,
-} from "@utils/regexSamples";
+} from "../../../../utils/regexSamples";
 
 interface IRequest {
   barcode: string;
@@ -25,7 +25,7 @@ class CheckBarcodeUseCase {
     private dateProvider: IDateProvider,
   ) {}
 
-  async execute({ barcode: barcodeRaw }: IRequest): Promise<ICheckBarcodeDTORet> {
+  async checkBarcode({ barcode: barcodeRaw }: IRequest): Promise<ICheckBarcodeDTORet> {
     try {
       if (!barcodeRaw) {
         throw new AppError("missing_parameters", "BAD_REQUEST");

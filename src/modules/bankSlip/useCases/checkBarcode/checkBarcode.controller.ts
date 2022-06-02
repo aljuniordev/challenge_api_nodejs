@@ -9,7 +9,7 @@ class CheckBarcodeController {
 
     const service = container.resolve(CheckBarcodeUseCase);
 
-    const ret = await service.execute({ barcode });
+    const ret = await service.checkBarcode({ barcode });
 
     return res.status(200).json(ret);
   }
